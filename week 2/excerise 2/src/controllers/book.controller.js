@@ -1,11 +1,24 @@
 const { PER_PAGE } = require("../constant/common");
+const {
+  createBookValid,
+  updateBookValid,
+} = require("../validations/book.valid");
 const bookModel = require("../models/book.model");
+const { updateAccount } = require("./account.controller");
+const { updateAccountValid } = require("../validations/account.valid");
 
 module.exports = {
   createBook: async (req, res) => {
-    const body = req.body;
     try {
-      const newAccount = await bookModel.create(body);
+      const body = req.body;
+      const { error, value } = createBookValid(body);
+      if (error) {
+        return res.status(400).json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      const newAccount = await bookModel.create(value);
 
       return res.status(201).json({
         message: "Tạo sách thành công",
@@ -42,11 +55,17 @@ module.exports = {
   },
 
   updateBook: async (req, res) => {
-    const id = req.params.id;
-    const body = req.body;
-
     try {
-      const updateBook = await bookModel.findByIdAndUpdate(id, body, {
+      const id = req.params.id;
+      const body = req.body;
+      const { error, value } = updateBookValid(body);
+      if (error) {
+        return res.status(400).json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      const updateBook = await bookModel.findByIdAndUpdate(id, value, {
         new: true,
       });
 

@@ -1,11 +1,23 @@
 const { PER_PAGE } = require("../constant/common");
+const {
+  createAccountValid,
+  updateAccountValid,
+} = require("../validations/account.valid");
 const accountModel = require("../models/account.model");
 
 module.exports = {
   createAccount: async (req, res) => {
-    const body = req.body;
     try {
-      const newAccount = await accountModel.create(body);
+      const body = req.body;
+      const { error, value } = createAccountValid(body);
+      if (error) {
+        return res.status(400).json({
+          status: 400,
+          message: error.message,
+        });
+      }
+
+      const newAccount = await accountModel.create(value);
 
       return res.status(201).json({
         message: "Tạo tài khoản thành công",
@@ -43,11 +55,17 @@ module.exports = {
   },
 
   updateAccount: async (req, res) => {
-    const id = req.params.id;
-    const body = req.body;
-
     try {
-      const updateAccount = await accountModel.findByIdAndUpdate(id, body, {
+      const id = req.params.id;
+      const body = req.body;
+      const { error, value } = updateAccountValid(body);
+      if (error) {
+        return res.status(400).json({
+          status: 400,
+          message: error.message,
+        });
+      }
+      const updateAccount = await accountModel.findByIdAndUpdate(id, value, {
         new: true,
       });
 
@@ -81,7 +99,7 @@ module.exports = {
       }
 
       return res.status(200).json({
-        message: "Xóa tài khoản thành công",
+        data: deletedAccount,
       });
     } catch (error) {
       return res.status(400).json({
